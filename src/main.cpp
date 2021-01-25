@@ -16,12 +16,12 @@
 #define DEBUG_SERIAL 0
 #define DEBUG_SERIAL_EXPECTED_ANSWERS 0
 #define TEST_DYNAMIC_FLUX 0
-#define PATCHED_ESP32_FWK 1
+#define PATCHED_ESP32_FWK 0
 #define START_AND_STOP 0
 #define KICK_START 0
 
 // serial
-#define SERIAL_BAUD 921600        // [-] Baud rate for built-in Serial (used for the Serial Monitor)
+#define SERIAL_BAUD 56000        // [-] Baud rate for built-in Serial (used for the Serial Monitor)
 #define BAUD_RATE_SMARTESC 115200 //115200
 
 // pinout
@@ -275,9 +275,9 @@ void displayBuffer(uint8_t *buffer, uint8_t size)
 {
   for (int i = 0; i < size; i++)
   {
-    Serial.printf("%02x ", buffer[i]);
+    //Serial.printf("%02x ", buffer[i]);
   }
-  Serial.printf("\n");
+  //Serial.printf("\n");
 }
 uint8_t getCrc(uint8_t *buffer, uint8_t size)
 {
@@ -396,7 +396,7 @@ void Receive()
     Serial.print("   received : ");
     for (int i = 0; i < nbBytes; i++)
     {
-      Serial.printf("%02x ", receiveBuffer[i]);
+     // Serial.printf("%02x ", receiveBuffer[i]);
     }
     Serial.println();
 #endif
@@ -409,20 +409,20 @@ void Receive()
     {
       msgSize = receiveBuffer[iFrame + 1];
 #if DEBUG_SERIAL
-      Serial.printf("   size = %02x\n", msgSize);
+      //Serial.printf("   size = %02x\n", msgSize);
 #endif
       if (receiveBuffer[iFrame] == SERIAL_START_FRAME_ESC_TO_DISPLAY_OK)
       {
-        Serial.printf("   ==> ok");
+       // Serial.printf("   ==> ok");
       }
       else if (receiveBuffer[iFrame] == SERIAL_START_FRAME_ESC_TO_DISPLAY_ERR)
       {
-        Serial.printf("   ==> KO !!!!!!!!!");
+       // Serial.printf("   ==> KO !!!!!!!!!");
       }
 
       if (msgSize == 0)
       {
-        Serial.println("   ===> CMD or REG_SET");
+        //Serial.println("   ===> CMD or REG_SET");
       }
       else if (msgSize == 1)
       {
@@ -430,11 +430,11 @@ void Receive()
         if ((lastOrderType == SERIAL_START_FRAME_DISPLAY_TO_ESC_REG_GET) && (lastOrderValue == FRAME_REG_STATUS))
         {
           motorStateMachineStatus = receiveBuffer[iFrame + 2];
-          Serial.printf("   ===> motorStateMachineStatus = %02x\n", motorStateMachineStatus);
+          //Serial.printf("   ===> motorStateMachineStatus = %02x\n", motorStateMachineStatus);
         }
         else
         {
-          Serial.printf("   ===> value = %02x\n", receiveBuffer[iFrame + 2]);
+         // Serial.printf("   ===> value = %02x\n", receiveBuffer[iFrame + 2]);
         }
 
         if (lastOrderType == SERIAL_START_FRAME_DISPLAY_TO_ESC_REG_GET)
@@ -448,7 +448,7 @@ void Receive()
       }
       else if (msgSize == 2)
       {
-        Serial.printf("   ===> unknonw");
+        //Serial.printf("   ===> unknonw");
       }
       else if (msgSize == 4)
       {
@@ -458,12 +458,12 @@ void Receive()
         if ((lastOrderType == SERIAL_START_FRAME_DISPLAY_TO_ESC_REG_GET) && (lastOrderValue == FRAME_REG_SPEED_MEASURED))
         {
           memcpy(&speed, &(receiveBuffer[iFrame + 2]), 4);
-          Serial.printf("   ===> speed : %d\n", speed);
+          //Serial.printf("   ===> speed : %d\n", speed);
         }
         else if ((lastOrderType == SERIAL_START_FRAME_DISPLAY_TO_ESC_REG_GET) && (lastOrderValue == FRAME_REG_FLAGS))
         {
           memcpy(&flags, &(receiveBuffer[iFrame + 2]), 4);
-          Serial.printf("   ===> flags : %08x\n", flags);
+          //Serial.printf("   ===> flags : %08x\n", flags);
 
           // try current and last faults
           if (flags >> 16 == 0)
@@ -530,12 +530,12 @@ void Receive()
       }
 
 #if DEBUG_SERIAL
-      Serial.printf("   nbBytes = %d / iFrame = %d / nextIFrame = %d\n", nbBytes, iFrame, msgSize + 3);
+      //Serial.printf("   nbBytes = %d / iFrame = %d / nextIFrame = %d\n", nbBytes, iFrame, msgSize + 3);
 #endif
       iFrame += msgSize + 3;
 
 #if DEBUG_SERIAL
-      Serial.printf("   next msg : iFrame = %d / msgSize = %02x\n", iFrame, msgSize);
+      //Serial.printf("   next msg : iFrame = %d / msgSize = %02x\n", iFrame, msgSize);
 #endif
 
       // protection against unexpected datas
@@ -545,7 +545,7 @@ void Receive()
       }
       else
       {
-        Serial.printf("   unexpected datas !!!\n");
+        //Serial.printf("   unexpected datas !!!\n");
       }
 
       isErrorFrame = false;
@@ -554,14 +554,14 @@ void Receive()
       {
         continueReading = true;
 #if DEBUG_SERIAL
-        Serial.println("      continue");
+        //Serial.println("      continue");
 #endif
       }
       else
       {
         continueReading = false;
 #if DEBUG_SERIAL
-        Serial.println("      stop");
+       // Serial.println("      stop");
 #endif
       }
     }
@@ -593,10 +593,14 @@ void readAnalogData(uint32_t state)
   if (analogValueBrake < 0)
     analogValueBrake = 0;
 
-  Serial.println((String)state + " / readAnalogData // throttleRaw = " + (String)analogValueThrottleRaw + " / throttleMinCalibRaw = " + //
+  /*Serial.println((String)state + " / readAnalogData // throttleRaw = " + (String)analogValueThrottleRaw + " / throttleMinCalibRaw = " + //
                  (String)analogValueThrottleMinCalibRaw + " / throttle = " + (String)analogValueThrottle + " / brakeRaw = " +           //
                  (String)analogValueBrakeRaw + " / brakeMinCalibRaw = " + (String)analogValueBrakeMinCalibRaw +                         //
                  " / brake = " + (String)analogValueBrake + " / torque = " + (String)torque + " / speed = " + (String)speed);
+                 */
+
+  Serial.println((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );              
+
 }
 
 // ########################## LOOP ##########################
@@ -789,7 +793,7 @@ void loop(void)
       torque = 0;
     }
 
-    Serial.printf("%d / send torque = %d : SET REG FRAME_REG_TORQUE : ", state, torque);
+    //Serial.printf("%d / send torque = %d : SET REG FRAME_REG_TORQUE : ", state, torque);
     SetRegS16(FRAME_REG_TORQUE, torque);
 
 #if RAMP_ENABLED
@@ -803,13 +807,13 @@ void loop(void)
   else if (state == 11)
   {
 
-    Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
     GetReg(FRAME_REG_FLAGS);
   }
 
   else if (state == 12)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
     GetReg(FRAME_REG_STATUS);
   }
 
@@ -819,7 +823,7 @@ void loop(void)
 #if TEST_DYNAMIC_FLUX
     if (speed > 100)
     {
-      Serial.printf("%d / send : SET REG FRAME_REG_FLUX_REF : ", state);
+      //Serial.printf("%d / send : SET REG FRAME_REG_FLUX_REF : ", state);
       SetRegU16(FRAME_REG_FLUX_REF, 0);
     }
 #endif
@@ -827,7 +831,7 @@ void loop(void)
   else if (state == 14)
   {
 
-    Serial.printf("%d / send : GET REG SPEED : ", state);
+    //Serial.printf("%d / send : GET REG SPEED : ", state);
     GetReg(FRAME_REG_SPEED_MEASURED);
   }
 
