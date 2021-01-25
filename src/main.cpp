@@ -65,7 +65,7 @@
 // motor orders
 #define THROTTLE_TO_TORQUE_FACTOR 50 // 128 for max -- positive torque on throttle
 #define BRAKE_TO_TORQUE_FACTOR 20  // 128 for max -- negative torque on brake
-#define THROTTLE_MINIMAL_TORQUE 1000 // appying this minimal torque when throttle is engaged
+#define THROTTLE_MINIMAL_TORQUE 200 // appying this minimal torque when throttle is engaged
 
 #define MIN_KICK_START_RPM 60 // minimal RPM speed before applying torque -- used only if KICK_START is enabled
 #define MIN_BRAKE_RPM 40      // minimal RPM speed for electric brake
@@ -600,8 +600,8 @@ void readAnalogData(uint32_t state)
                  " / brake = " + (String)analogValueBrake + " / torque = " + (String)torque + " / speed = " + (String)speed);
                  */
 
-  Serial.println((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );    
-  //Serial.printf((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );           
+  //Serial.println((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );    
+  Serial.printf("%d, %d, %d, %d, %d \r\n",state, analogValueThrottle, analogValueThrottleMinCalibRaw ,torque, speed );           
 
 }
 
