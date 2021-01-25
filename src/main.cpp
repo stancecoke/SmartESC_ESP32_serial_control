@@ -88,7 +88,9 @@ uint8_t receiveBuffer[1000]; // Buffer Start Frame
 // Trottle
 int32_t analogValueThrottle = 0;
 uint16_t analogValueThrottleRaw = 0;
+uint32_t analogValueThrottleRaw_cumulated = 0;
 uint16_t analogValueThrottleMinCalibRaw = 0;
+uint16_t analogValueThrottleMaxCalibRaw = 3200;
 
 // Brake
 int32_t analogValueBrake = 0;
@@ -398,7 +400,7 @@ void Receive()
     {
      // Serial.printf("%02x ", receiveBuffer[i]);
     }
-    Serial.println();
+    //Serial.printf("\n");
 #endif
 
     int iFrame = 0;
@@ -566,7 +568,7 @@ void Receive()
       }
     }
 
-    Serial.println();
+    //Serial.println();
   }
 }
 
@@ -577,12 +579,11 @@ void readAnalogData(uint32_t state)
 
   // Compute throttle
   analogValueThrottleRaw = analogRead(PIN_IN_ATHROTTLE);
-  analogValueThrottle = analogValueThrottleRaw - analogValueThrottleMinCalibRaw - SECURITY_OFFSET;
-  analogValueThrottle = analogValueThrottle / 4;
-  if (analogValueThrottle > 255)
-    analogValueThrottle = 255;
-  if (analogValueThrottle < 0)
-    analogValueThrottle = 0;
+  analogValueThrottleRaw_cumulated-=analogValueThrottleRaw_cumulated>>4;
+  analogValueThrottleRaw_cumulated+=analogValueThrottleRaw;
+  analogValueThrottle = (analogValueThrottleRaw_cumulated>>4) - analogValueThrottleMinCalibRaw - SECURITY_OFFSET;
+  analogValueThrottle = map(analogValueThrottle,analogValueThrottleMinCalibRaw,analogValueThrottleMaxCalibRaw,0,255);
+
 
   // Compute brake
   analogValueBrakeRaw = analogRead(PIN_IN_ABRAKE);
@@ -599,7 +600,8 @@ void readAnalogData(uint32_t state)
                  " / brake = " + (String)analogValueBrake + " / torque = " + (String)torque + " / speed = " + (String)speed);
                  */
 
-  Serial.println((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );              
+  Serial.println((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );    
+  //Serial.printf((String)state +" ,"+(String)analogValueThrottleRaw +" ,"+ (String)torque+" ,"+(String)speed );           
 
 }
 
@@ -616,7 +618,7 @@ void loop(void)
   if (expectedAnswers > 0)
   {
 #if DEBUG_SERIAL_EXPECTED_ANSWERS
-    Serial.printf("expectedAnswers = %d => return\n", expectedAnswers);
+    //Serial.printf("expectedAnswers = %d => return\n", expectedAnswers);
 #endif
     delay(DELAY_BETWEEN_STATES); // 5 // 200 Hz orders
 
@@ -666,17 +668,17 @@ void loop(void)
   }
   else if (state == -1)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_SPEED_MEASURED : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_SPEED_MEASURED : ", state);
     GetReg(FRAME_REG_SPEED_MEASURED);
   }
   else if (state == 0)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
     GetReg(FRAME_REG_STATUS);
   }
   else if (state == 1)
   {
-    Serial.printf("%d / send : CMD STOP : ", state);
+    //Serial.printf("%d / send : CMD STOP : ", state);
     SendCmd(SERIAL_FRAME_CMD_STOP);
 
     // reset values
@@ -689,35 +691,35 @@ void loop(void)
 
   else if (state == 2)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
     GetReg(FRAME_REG_FLAGS);
   }
 
   else if (state == 3)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
     GetReg(FRAME_REG_STATUS);
   }
   else if (state == 4)
   {
-    Serial.printf("%d / send : CMD FAULT_ACK : ", state);
+    //Serial.printf("%d / send : CMD FAULT_ACK : ", state);
     SendCmd(SERIAL_FRAME_CMD_FAULT_ACK);
   }
 
   else if (state == 5)
   {
 
-    Serial.printf("%d / send : SET REG CONTROL_MODE : ", state);
+    //Serial.printf("%d / send : SET REG CONTROL_MODE : ", state);
     SetRegU16(FRAME_REG_CONTROL_MODE, 0x00);
 
     delay(5);
 
-    Serial.printf("%d / send : REG_TORQUE_KI : ", state);
+    //Serial.printf("%d / send : REG_TORQUE_KI : ", state);
     SetRegU16(FRAME_REG_TORQUE_KI, TORQUE_KI);
 
     delay(5);
 
-    Serial.printf("%d / send : REG_TORQUE_KP : ", state);
+    //Serial.printf("%d / send : REG_TORQUE_KP : ", state);
     SetRegU16(FRAME_REG_TORQUE_KP, TORQUE_KP);
 
     delay(5);
@@ -740,25 +742,25 @@ void loop(void)
 
   else if (state == 6)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
     GetReg(FRAME_REG_FLAGS);
   }
   else if (state == 7)
   {
 
-    Serial.printf("%d / send : CMD START : ", state);
+    //Serial.printf("%d / send : CMD START : ", state);
     SendCmd(SERIAL_FRAME_CMD_START);
 
     delay(DELAY_CMD);
   }
   else if (state == 8)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_FLAGS : ", state);
     GetReg(FRAME_REG_FLAGS);
   }
   else if (state == 9)
   {
-    Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
+    //Serial.printf("%d / send : GET REG FRAME_REG_STATUS : ", state);
     GetReg(FRAME_REG_STATUS);
   }
   else if (state == 10)
